@@ -21,7 +21,6 @@ possible in a single request. Our recommendation is ten thousand.
 ### Steps
 
 1. Go to code [repository](https://github.com/supportbequant/gaiia) and get the code zip file (in repository home page, go to Code->Download ZIP).
-![github code zip](github-gaiia-get-zip.png)
 
 2. Unzip the code zip file. For example with unzip command:
 ```
@@ -64,9 +63,8 @@ scp ./gaiia-main/BillingSync.py  ./gaiia-main/sync-gaiia-bqn ./gaiia-main/sync-g
 6. Make sure the following files are executable in BQN:
 ```
 ssh root@<BQN-OAM-IP>
-cd gaiia
 chmod a+x ./gaiia/sync-gaiia-bqn
-chnod a+x ./gaiia/sync-gaiia-bqn.sh
+chmod a+x ./gaiia/sync-gaiia-bqn.sh
 exit
 ```
 
