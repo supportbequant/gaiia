@@ -147,6 +147,18 @@ class Gaiia(BillingSync):
               id
               ipAddressV4
               ipAddressV6
+              upstreamDevice {
+                item {
+                  assignation {
+                    assignee {
+                      ... on NetworkSite {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -225,7 +237,16 @@ class Gaiia(BillingSync):
           subGroup["subscriberMembers"] = [item["inventoryItem"]["ipAddressV4"]]
           subGroup["subscriberRanges"] = [item["inventoryItem"]["ipAddressV6"]]
           data["subscriberGroups"].append(subGroup)
-
+        # Group by network site
+        if self.fieldIsNotNull(item["inventoryItem"], ["upstreamDevice", "item", "assignation", "assignee", "name"]):
+          subGroup = {}
+          data["subscriberGroups"].append(subGroup)
+          subGroup["subscriberGroupName"] = "L1-%s" % item["inventoryItem"]["upstreamDevice"]["item"]["assignation"]["assignee"]["name"]
+          if item["inventoryItem"]["ipAddressV4"]:
+            subGroup["subscriberMembers"] = [item["inventoryItem"]["ipAddressV4"]]
+          if item["inventoryItem"]["ipAddressV6"]:
+            subGroup["subscriberRanges"] = [item["inventoryItem"]["ipAddressV6"]]
+          data["subscriberGroups"].append(subGroup)
     return data
 
 ################################################################################
