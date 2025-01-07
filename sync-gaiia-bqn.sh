@@ -13,7 +13,7 @@ BQN_REST_PW=mypassword
 GAIIA_DUAL_STACK=--dual-stack
 # IP address or domain of the UIX server
 GAIIA_SERVER=api.gaiia.com
-# REST API KEY of the IXC server
+# REST API KEY of the Gaiia server
 GAIIA_KEY=apikey
 
 # Uncomment to synchronize every 15 minutes instead of 5

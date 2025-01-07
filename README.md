@@ -50,7 +50,7 @@ BQN_REST_PW=mypassword
 GAIIA_DUAL_STACK=--dual-stack
 # IP address or domain of the UIX server
 GAIIA_SERVER=api.gaiia.com
-# REST API KEY of the IXC server
+# REST API KEY of the Gaiia server
 GAIIA_KEY=5a15d248-376b-1324-cd15-24ad3a37be31
 . . .
 ```
@@ -112,7 +112,7 @@ that the sync-gaiia-bqn.sh MUST NOT be updated.
 4. Make sure the following updated file remains executable in BQN:
 ```
 ssh root@<BQN-OAM-IP>
-chmod a+x ./gaiia/sync-ixc-bqn
+chmod a+x ./gaiia/sync-gaiia-bqn
 exit
 ```
 

@@ -59,7 +59,7 @@ class Gaiia(BillingSync):
     except Exception as e:
       raise Exception("Query response could not be converted to JSON")
 
-    # Check GrapQL errors
+    # Check GraphQL errors
     if "errors" in jsonResponse:
       for e in jsonResponse["errors"]:
         # If we hit Gaiia rate limit, wait the indicated time and try again
@@ -80,7 +80,6 @@ class Gaiia(BillingSync):
   ############################################################################
 
   def getInternetPlans(self, url, headers):
-    # TODO: Ask for INTERNET_PLAN type only
     queryTemplate = """query Products {
     products(%s, filter: { category: { type: { equals: INTERNET_PLAN } } } ) {
       nodes {
