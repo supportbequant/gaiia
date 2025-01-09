@@ -19,6 +19,7 @@ import argparse
 import datetime
 import time
 import sys
+import ipaddress
 
 import requests
 if not requests.__version__.startswith("1."):
@@ -120,6 +121,7 @@ class Gaiia(BillingSync):
     queryTemplate = """query Accounts {
     accounts(%s, filter: { status: { type: { in: [ACTIVE, INACTIVE, SUSPENDED] } } } ) {
       nodes {
+        readableId
         primaryContact {
           firstName
           lastName
@@ -189,6 +191,7 @@ class Gaiia(BillingSync):
       
   def normalizeData(self, products, accounts, dualStack):
     data = {'subscribers': [], 'policies': [], "subscriberGroups": []}
+    siteGroups = {}
   
     # product name is unique in Gaiia
     for p in products:
@@ -238,14 +241,21 @@ class Gaiia(BillingSync):
           data["subscriberGroups"].append(subGroup)
         # Group by network site
         if self.fieldIsNotNull(item["inventoryItem"], ["upstreamDevice", "item", "assignation", "assignee", "name"]):
-          subGroup = {}
-          data["subscriberGroups"].append(subGroup)
-          subGroup["subscriberGroupName"] = "L1-%s" % item["inventoryItem"]["upstreamDevice"]["item"]["assignation"]["assignee"]["name"]
+          groupName = "L1-%s" % item["inventoryItem"]["upstreamDevice"]["item"]["assignation"]["assignee"]["name"]
+          if not groupName in siteGroups:
+            siteGroups[groupName] = {
+              "subscriberGroupName": groupName,
+              "subscriberMembers": [],
+              "subscriberRanges": []
+            }
           if item["inventoryItem"]["ipAddressV4"]:
-            subGroup["subscriberMembers"] = [item["inventoryItem"]["ipAddressV4"]]
+            siteGroups[groupName]["subscriberMembers"].append(item["inventoryItem"]["ipAddressV4"])
           if item["inventoryItem"]["ipAddressV6"]:
-            subGroup["subscriberRanges"] = [item["inventoryItem"]["ipAddressV6"]]
-          data["subscriberGroups"].append(subGroup)
+            maskedIpv6 = str(ipaddress.ip_network("%s/%d" % (item["inventoryItem"]["ipAddressV6"], 64), strict=False).network_address)
+            siteGroups[groupName]["subscriberMembers"].append(maskedIpv6)
+    
+    data["subscriberGroups"] += list(siteGroups.values())
+
     return data
 
 ################################################################################
@@ -300,7 +310,7 @@ if __name__ == "__main__":
 
   data = billingSync.normalizeData(products, accounts, args.dualStack)
   billingSync.logger.warning("%s data normalization completed" % datetime.datetime.now())
-
+  
   if args.verbose > 0:
     billingSync.printData(data)
   if args.bqn:
