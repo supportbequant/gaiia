@@ -203,6 +203,7 @@ class Gaiia(BillingSync):
       })
 
     for a in accounts:
+      maskedIpv6 = ""
       subscriberId = a["primaryContact"]["firstName"] + " " + a["primaryContact"]["lastName"]
       matches = self.getInternetProductSubscription(a["billingSubscriptions"]["nodes"])
       if len(matches) == 0:
@@ -224,8 +225,9 @@ class Gaiia(BillingSync):
               "block": block
             })
         if item["inventoryItem"]["ipAddressV6"]:
+          maskedIpv6 = str(ipaddress.ip_network("%s/%d" % (item["inventoryItem"]["ipAddressV6"], 64), strict=False).network_address)
           data["subscribers"].append({
-              "subscriberIp": item["inventoryItem"]["ipAddressV6"],
+              "subscriberIp": maskedIpv6,
               "subscriberId": subscriberId,
               "policyRate" : policy,
               "state": a["status"]["type"],
@@ -236,8 +238,7 @@ class Gaiia(BillingSync):
           subGroup = {}
           subGroup["subscriberGroupName"] = "DS-%s" % subscriberId
           subGroup["policyRate"] = policy
-          subGroup["subscriberMembers"] = [item["inventoryItem"]["ipAddressV4"]]
-          subGroup["subscriberRanges"] = [item["inventoryItem"]["ipAddressV6"]]
+          subGroup["subscriberMembers"] = [item["inventoryItem"]["ipAddressV4"], maskedIpv6]
           data["subscriberGroups"].append(subGroup)
         # Group by network site
         if self.fieldIsNotNull(item["inventoryItem"], ["upstreamDevice", "item", "assignation", "assignee", "name"]):
@@ -251,7 +252,6 @@ class Gaiia(BillingSync):
           if item["inventoryItem"]["ipAddressV4"]:
             siteGroups[groupName]["subscriberMembers"].append(item["inventoryItem"]["ipAddressV4"])
           if item["inventoryItem"]["ipAddressV6"]:
-            maskedIpv6 = str(ipaddress.ip_network("%s/%d" % (item["inventoryItem"]["ipAddressV6"], 64), strict=False).network_address)
             siteGroups[groupName]["subscriberMembers"].append(maskedIpv6)
     
     data["subscriberGroups"] += list(siteGroups.values())
